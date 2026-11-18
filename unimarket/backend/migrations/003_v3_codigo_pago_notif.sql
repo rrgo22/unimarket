@@ -1,0 +1,16 @@
+-- 003_v3_codigo_pago_notif.sql
+
+CREATE SEQUENCE IF NOT EXISTS seq_codigo_pago START WITH 1;
+ALTER TABLE empresa ADD COLUMN IF NOT EXISTS codigo_pago VARCHAR(20) UNIQUE;
+ALTER TABLE empresa ADD COLUMN IF NOT EXISTS correo VARCHAR(120);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_empresa_correo_unique ON empresa(correo) WHERE eliminado_en IS NULL;
+
+-- Tabla pago
+ALTER TABLE pago ADD COLUMN IF NOT EXISTS banco VARCHAR(80);
+ALTER TABLE pago ADD COLUMN IF NOT EXISTS fecha_pago TIMESTAMP DEFAULT NOW();
+ALTER TABLE pago ADD COLUMN IF NOT EXISTS es_demo BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Tabla notificacion_correo
+ALTER TABLE notificacion_correo ALTER COLUMN id_empresa DROP NOT NULL;
+ALTER TABLE notificacion_correo ADD COLUMN IF NOT EXISTS asunto VARCHAR(250);
+ALTER TABLE notificacion_correo ADD COLUMN IF NOT EXISTS intentos INT NOT NULL DEFAULT 1;

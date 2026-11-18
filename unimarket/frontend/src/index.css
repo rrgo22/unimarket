@@ -1,0 +1,360 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-fondo-pagina: #070F2B;
+  --hero-dark: #070F2B;
+  --hero-deep: #0B1437;
+  --hero-indigo: #14205F;
+  --hero-cyan: #22D3EE;
+  --hero-teal: #14B8A6;
+  --hero-violet: #7C3AED;
+  --hero-lavender: #A78BFA;
+
+
+  --cta-from: #4F46E5;
+  --cta-to: #7C3AED;
+  --cta-hover-from: #5B52F0;
+  --cta-hover-to: #8B4BF5;
+  --cta-shadow: 0 4px 18px -2px rgba(124, 58, 237, 0.35);
+  --cta-shadow-hover: 0 6px 24px -2px rgba(124, 58, 237, 0.45);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+    background-color: #070F2B;
+    color: #F8FAFC;
+  }
+  body {
+    background-color: #070F2B;
+    color: #F8FAFC;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    font-family: "Inter Variable", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Quitar recuadros de foco en clics de ratón, dejando solo :focus-visible por teclado */
+  *:focus {
+    outline: none !important;
+  }
+  *:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  *:focus-visible {
+    outline: 2px solid #22D3EE !important;
+    outline-offset: 2px !important;
+  }
+}
+
+/* NAVBAR CON AZUL NOCHE EXACTO (rgb(8 15 43)) Y SOLO TRANSPARENCIA */
+.navbar {
+  background-color: rgba(8, 15, 43, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background-color 220ms ease, height 220ms ease, box-shadow 220ms ease;
+}
+
+.navbar.navbar-scrolled {
+  background-color: rgba(8, 15, 43, 0.82);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+}
+
+.navbar-text-shadow {
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Respaldo para navegadores sin soporte de backdrop-filter (alfa 0.92) */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .navbar {
+    background-color: rgba(8, 15, 43, 0.92) !important;
+  }
+}
+
+/* Desplegables nativos fallback */
+select option {
+  background-color: #0E1A44;
+  color: #E5E7EB;
+}
+
+/* Campo de búsqueda sin recuadro interior */
+.input-bare {
+  background-color: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+.input-bare:focus,
+.input-bare:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+@layer components {
+  /* Entradas de formulario oscuras */
+  .input {
+    @apply w-full rounded-xl px-3.5 py-2.5 text-base sm:text-sm text-white placeholder-slate-400 outline-none transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed shadow-sm;
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  .input:focus {
+    border-color: #22D3EE;
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.25);
+  }
+
+  .input-error {
+    border-color: #F43F5E !important;
+    color: #FFE4E6 !important;
+  }
+  .input-error:focus {
+    box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.3) !important;
+  }
+
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300;
+  }
+
+  .err {
+    @apply mt-1.5 flex items-center gap-1.5 text-xs font-medium text-rose-400;
+  }
+
+  /* Base de botones */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-medium transition duration-150 ease-in-out select-none;
+  }
+  .btn:focus {
+    outline: none !important;
+  }
+  .btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #070F2B, 0 0 0 4px #22D3EE !important;
+  }
+
+  .btn-sm {
+    @apply btn px-3 py-1.5 text-xs min-h-[36px];
+  }
+
+  .btn-md {
+    @apply btn px-4 py-2 text-sm min-h-[44px];
+  }
+
+  .btn-lg {
+    @apply btn px-6 py-3 text-base min-h-[48px];
+  }
+
+  /* NUEVO BOTÓN CTA (Índigo #4F46E5 a Violeta #7C3AED) */
+  .btn-cta {
+    @apply btn-md font-semibold transition-all duration-200;
+    background: linear-gradient(135deg, var(--cta-from) 0%, var(--cta-to) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: var(--cta-shadow);
+    color: #ffffff !important;
+  }
+  .btn-cta:hover {
+    background: linear-gradient(135deg, var(--cta-hover-from) 0%, var(--cta-hover-to) 100%);
+    box-shadow: var(--cta-shadow-hover);
+    transform: translateY(-1px);
+    color: #ffffff !important;
+  }
+  .btn-cta:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 2px 8px -1px rgba(124, 58, 237, 0.3);
+  }
+  .btn-cta:focus {
+    outline: none !important;
+  }
+  .btn-cta:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #070F2B, 0 0 0 4px #22D3EE, var(--cta-shadow) !important;
+  }
+  .btn-cta:disabled,
+  .btn-cta[disabled] {
+    opacity: 0.5 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    pointer-events: none;
+  }
+
+  /* .btn-primary y .btn-hero-cta heredan directamente del nuevo CTA */
+  .btn-primary {
+    @apply btn-cta;
+  }
+
+  .btn-hero-cta {
+    @apply btn-cta;
+  }
+
+  .btn-light {
+    @apply btn-md text-slate-100 shadow-sm transition-all;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  .btn-light:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  .btn-ghost {
+    @apply btn-md text-slate-300 transition-colors;
+  }
+  .btn-ghost:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+  }
+
+  .btn-danger {
+    @apply btn-md bg-rose-600 text-white shadow-sm hover:bg-rose-500 active:bg-rose-700;
+  }
+
+  .btn-success {
+    @apply btn-md bg-emerald-600 text-white shadow-sm hover:bg-emerald-500 active:bg-emerald-700;
+  }
+
+  /* Tarjetas oscuras con vidrio (glassmorphism) */
+  .card {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+    color: #F8FAFC;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .glass-pill {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  /* Badges y Chips de Estado */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  .badge-verificado, .badge-aprobado {
+    @apply badge text-emerald-300 border border-emerald-500/30;
+    background-color: rgba(16, 185, 129, 0.15);
+  }
+
+  .badge-activa {
+    @apply badge text-emerald-300 border border-emerald-500/30;
+    background-color: rgba(16, 185, 129, 0.15);
+  }
+
+  /* Estado semántico de advertencia / pendiente (CONSERVA ÁMBAR por significado) */
+  .badge-pendiente {
+    @apply badge text-amber-300 border border-amber-500/30;
+    background-color: rgba(245, 158, 11, 0.15);
+  }
+
+  .badge-observado, .badge-rechazado {
+    @apply badge text-rose-300 border border-rose-500/30;
+    background-color: rgba(244, 63, 94, 0.15);
+  }
+
+  .badge-vencida {
+    @apply badge text-slate-400 border border-slate-600;
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .badge-suspendida {
+    @apply badge text-rose-300 border border-rose-500/30;
+    background-color: rgba(244, 63, 94, 0.15);
+  }
+
+  /* Skeleton Loader Oscuro */
+  .skeleton {
+    @apply animate-pulse rounded-xl;
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Animaciones de Aurora de Fondo */
+@keyframes aurora-1 {
+  0%, 100% {
+    transform: translate(0%, 0%) scale(1);
+    opacity: 0.35;
+  }
+  33% {
+    transform: translate(6%, -8%) scale(1.1);
+    opacity: 0.45;
+  }
+  66% {
+    transform: translate(-8%, 6%) scale(0.95);
+    opacity: 0.3;
+  }
+}
+
+@keyframes aurora-2 {
+  0%, 100% {
+    transform: translate(0%, 0%) scale(1);
+    opacity: 0.3;
+  }
+  33% {
+    transform: translate(-8%, 8%) scale(1.08);
+    opacity: 0.42;
+  }
+  66% {
+    transform: translate(8%, -6%) scale(1.02);
+    opacity: 0.28;
+  }
+}
+
+@keyframes aurora-3 {
+  0%, 100% {
+    transform: translate(0%, 0%) scale(1);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate(8%, 10%) scale(1.15);
+    opacity: 0.38;
+  }
+}
+
+.animate-aurora-1 {
+  animation: aurora-1 28s ease-in-out infinite;
+}
+.animate-aurora-2 {
+  animation: aurora-2 36s ease-in-out infinite;
+}
+.animate-aurora-3 {
+  animation: aurora-3 24s ease-in-out infinite;
+}
+
+/* Pausar animaciones cuando la pestaña está en segundo plano */
+.paused-animations *,
+.paused-animations *::before,
+.paused-animations *::after {
+  animation-play-state: paused !important;
+}
+
+/* Reducción de animaciones si el usuario lo prefiere */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
