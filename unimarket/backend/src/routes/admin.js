@@ -313,6 +313,14 @@ router.get('/verificaciones', async (req, res, next) => {
     } else if (estadoFiltro === 'rechazada' || estadoFiltro === 'rechazado') {
       where.push(`v.estado IN ('rechazada', 'rechazado')`);
     }
+    const slaFiltro = String(req.query.sla || '').toLowerCase();
+    if (slaFiltro === 'normal') {
+      where.push(`NOW() - v.fecha_solicitud < INTERVAL '24 hours'`);
+    } else if (slaFiltro === 'alerta') {
+      where.push(`NOW() - v.fecha_solicitud >= INTERVAL '24 hours' AND NOW() - v.fecha_solicitud < INTERVAL '48 hours'`);
+    } else if (slaFiltro === 'critico') {
+      where.push(`NOW() - v.fecha_solicitud >= INTERVAL '48 hours'`);
+    }
     // Si es 'todas', no se agrega filtro de estado
 
     const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';

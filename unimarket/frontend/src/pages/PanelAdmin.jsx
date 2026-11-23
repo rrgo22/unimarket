@@ -84,6 +84,7 @@ function Verificaciones() {
   const [lista, setLista] = useState([]);
   const [todasSolicitudes, setTodasSolicitudes] = useState([]);
   const [tabFiltro, setTabFiltro] = useState('pendiente'); // 'pendiente' | 'observada' | 'verificada' | 'rechazada' | 'todas'
+  const [filtroSla, setFiltroSla] = useState('todos'); // 'todos' | 'normal' | 'alerta' | 'critico'
   const [cargando, setCargando] = useState(false);
   const [reenviandoId, setReenviandoId] = useState(null);
 
@@ -144,18 +145,14 @@ function Verificaciones() {
 
   // Filtrado según la pestaña activa
   useEffect(() => {
-    if (tabFiltro === 'todas') {
-      setLista(todasSolicitudes);
-    } else if (tabFiltro === 'pendiente') {
-      setLista(todasSolicitudes.filter((v) => v.estado === 'pendiente'));
-    } else if (tabFiltro === 'observada') {
-      setLista(todasSolicitudes.filter((v) => ['observada', 'observado'].includes(v.estado)));
-    } else if (tabFiltro === 'verificada') {
-      setLista(todasSolicitudes.filter((v) => ['verificada', 'verificado', 'aprobada', 'aprobado'].includes(v.estado)));
-    } else if (tabFiltro === 'rechazada') {
-      setLista(todasSolicitudes.filter((v) => ['rechazada', 'rechazado'].includes(v.estado)));
-    }
-  }, [tabFiltro, todasSolicitudes]);
+    let filtradas = todasSolicitudes;
+    if (tabFiltro === 'pendiente') filtradas = filtradas.filter((v) => v.estado === 'pendiente');
+    if (tabFiltro === 'observada') filtradas = filtradas.filter((v) => ['observada', 'observado'].includes(v.estado));
+    if (tabFiltro === 'verificada') filtradas = filtradas.filter((v) => ['verificada', 'verificado', 'aprobada', 'aprobado'].includes(v.estado));
+    if (tabFiltro === 'rechazada') filtradas = filtradas.filter((v) => ['rechazada', 'rechazado'].includes(v.estado));
+    if (filtroSla !== 'todos') filtradas = filtradas.filter((v) => calcularSLA(v.fecha_solicitud).nivel === filtroSla);
+    setLista(filtradas);
+  }, [tabFiltro, filtroSla, todasSolicitudes]);
 
   const abrirModalRevision = (v) => {
     setSolicitudModal(v);
@@ -243,6 +240,29 @@ function Verificaciones() {
       </div>
 
       {/* Vista Móvil: Tarjetas apiladas */}
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+          <Clock size={15} className="text-cyan-300" aria-hidden="true" />
+          <span>Semáforo SLA</span>
+        </div>
+        <select
+          value={filtroSla}
+          onChange={(e) => setFiltroSla(e.target.value)}
+          className="rounded-xl border border-white/15 bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-100 outline-none transition focus:border-cyan-400"
+          aria-label="Filtrar solicitudes por semáforo SLA"
+        >
+          <option value="todos">Todos los tiempos</option>
+          <option value="normal">Verde · menos de 24 h</option>
+          <option value="alerta">Amarillo · 24 a 48 h</option>
+          <option value="critico">Rojo · más de 48 h</option>
+        </select>
+        {filtroSla !== 'todos' && (
+          <button type="button" onClick={() => setFiltroSla('todos')} className="text-xs font-semibold text-cyan-300 hover:text-white">
+            Limpiar filtro
+          </button>
+        )}
+      </div>
+
       <div className="grid gap-3 md:hidden">
         {lista.map((v) => {
           const sla = calcularSLA(v.fecha_solicitud);

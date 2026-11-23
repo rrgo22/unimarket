@@ -988,7 +988,8 @@ router.post('/pedidos', rateLimitPedidos, async (req, res, next) => {
       const prodRes = await client.query(
         `SELECT id_producto, nombre, sku, precio, stock_actual, cantidad_minima, unidad_venta, color_unico
            FROM producto
-          WHERE id_producto = $1 AND id_empresa = $2 AND disponible = TRUE`,
+          WHERE id_producto = $1 AND id_empresa = $2 AND disponible = TRUE
+          FOR UPDATE`,
         [id_producto, id_empresa]
       );
 
@@ -1012,6 +1013,52 @@ router.post('/pedidos', rateLimitPedidos, async (req, res, next) => {
         return res.status(400).json({ error: `Stock insuficiente para "${prod.nombre}". Disponibles: ${prod.stock_actual}` });
       }
 
+      // Validar en servidor el desglose por color. El navegador no es una
+      // fuente confiable para nombres, IDs ni cantidades.
+      const desgloseColores = Array.isArray(item.desglose_colores) ? item.desglose_colores : [];
+      const coloresSolicitados = new Map();
+      for (const color of desgloseColores) {
+        const idColor = parseInt(color?.id_color, 10);
+        const cantidadColor = parseInt(color?.cantidad, 10);
+        if (!Number.isInteger(idColor) || !Number.isInteger(cantidadColor) || cantidadColor < 1) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ error: `El desglose de colores de "${prod.nombre}" no es válido` });
+        }
+        coloresSolicitados.set(idColor, (coloresSolicitados.get(idColor) || 0) + cantidadColor);
+      }
+
+      if (coloresSolicitados.size > 0) {
+        const sumaColores = [...coloresSolicitados.values()].reduce((suma, valor) => suma + valor, 0);
+        if (sumaColores !== cantidad) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ error: `La suma de cantidades por color de "${prod.nombre}" debe ser exactamente ${cantidad}` });
+        }
+
+        const idsColor = [...coloresSolicitados.keys()];
+        const coloresRes = await client.query(
+          `SELECT id, nombre, stock
+             FROM producto_color
+            WHERE id_producto = $1 AND activo = TRUE AND id = ANY($2::int[])
+            FOR UPDATE`,
+          [id_producto, idsColor]
+        );
+        if (coloresRes.rowCount !== idsColor.length) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ error: `Uno de los colores seleccionados para "${prod.nombre}" ya no está disponible` });
+        }
+
+        for (const color of coloresRes.rows) {
+          const solicitadas = coloresSolicitados.get(color.id);
+          const stockDisponible = color.stock !== null && color.stock !== undefined ? Number(color.stock) : Number(prod.stock_actual);
+          if (Number.isFinite(stockDisponible) && solicitadas > stockDisponible) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+              error: `Stock insuficiente para el color "${color.nombre}" de "${prod.nombre}". Disponible: ${stockDisponible}, solicitado: ${solicitadas}.`,
+            });
+          }
+        }
+      }
+
       // Calcular precio aplicable según escalas de precio por volumen
       const escalasRes = await client.query(
         `SELECT desde_unidades, precio_unitario
@@ -1029,9 +1076,6 @@ router.post('/pedidos', rateLimitPedidos, async (req, res, next) => {
 
       const subtotal = Number((precioUnitario * cantidad).toFixed(2));
       totalEstimado += subtotal;
-
-      // Colores
-      const desgloseColores = Array.isArray(item.desglose_colores) ? item.desglose_colores : [];
 
       itemsValidados.push({
         id_producto,
